@@ -45,7 +45,7 @@ function suggestSetNodeMarkup(
     }
 
     const newNode = step.slice.content.firstChild;
-    const oldNode = doc.resolve(step.from).nodeAfter;
+    let oldNode = trackedTransaction.doc.resolve(step.from).nodeAfter;
 
     if (!newNode || !oldNode) {
       throw new Error(
@@ -54,7 +54,7 @@ function suggestSetNodeMarkup(
     }
 
     const addedMarks = newNode.marks.filter(
-      (m) => !oldNode.marks.some((m2) => m2.eq(m)),
+      (m) => !oldNode?.marks.some((m2) => m2.eq(m)),
     );
 
     addedMarks.forEach((mark) => {
@@ -70,6 +70,13 @@ function suggestSetNodeMarkup(
         suggestionId,
       );
     });
+
+    oldNode = trackedTransaction.doc.resolve(step.from).nodeAfter;
+    if (!oldNode) {
+      throw new Error(
+        "Failed to apply modifications to node: unexpected ReplaceAroundStep as oldNode is null",
+      );
+    }
 
     const removedMarks = oldNode.marks.filter(
       (m) => !newNode.marks.some((m2) => m2.eq(m)),
